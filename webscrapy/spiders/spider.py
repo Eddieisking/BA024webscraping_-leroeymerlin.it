@@ -106,7 +106,7 @@ class SpiderSpider(scrapy.Spider):
             item['customer_name'] = review.xpath('./div[@class="data-review-nickname"]/text()').extract() or ['N/A']
             item['customer_rating'] = review.xpath('./div[@class="data-review-rating"]/text()')[0].extract() or 'N/A'
             item['customer_date'] = review.xpath('./div[@class="data-review-date"]/text()')[0].extract() or 'N/A'
-            item['customer_review'] = review.xpath('./div[@class="data-review-text"]/text()').extract() or 'N/A'
+            item['customer_review'] = review.xpath('./div[@class="data-review-text"]/text()').extract() or ['N/A']
             item['customer_support'] = review.xpath('./div[@class="data-review-useful"]/text()')[0].extract() or 'N/A'
             item['customer_disagree'] = review.xpath('./div[@class="data-review-not-useful"]/text()')[0].extract() or 'N/A'
 
