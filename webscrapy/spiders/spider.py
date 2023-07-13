@@ -103,11 +103,17 @@ class SpiderSpider(scrapy.Spider):
                                    or response.xpath('//*[@id="product-name"]/text()').extract_first()
 
             item['review_id'] = review.xpath('./@data-review-id')[0].extract() or 'N/A'
-            item['customer_name'] = review.xpath('./div[@class="data-review-nickname"]/text()').extract() or ['N/A']
             item['customer_rating'] = review.xpath('./div[@class="data-review-rating"]/text()')[0].extract() or 'N/A'
             item['customer_date'] = review.xpath('./div[@class="data-review-date"]/text()')[0].extract() or 'N/A'
-            item['customer_review'] = review.xpath('./div[@class="data-review-text"]/text()').extract() or ['N/A']
             item['customer_support'] = review.xpath('./div[@class="data-review-useful"]/text()')[0].extract() or 'N/A'
             item['customer_disagree'] = review.xpath('./div[@class="data-review-not-useful"]/text()')[0].extract() or 'N/A'
+            try:
+                item['customer_name'] = review.xpath('./div[@class="data-review-nickname"]/text()')[0].extract()
+            except IndexError as e:
+                item['customer_name'] = 'N/A'
+            try:
+                item['customer_review'] = review.xpath('./div[@class="data-review-text"]/text()')[0].extract()
+            except IndexError as e:
+                item['customer_review'] = 'N/A'
 
             yield item
