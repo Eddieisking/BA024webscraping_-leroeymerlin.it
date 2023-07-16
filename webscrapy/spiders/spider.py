@@ -12,27 +12,27 @@ from webscrapy.items import WebscrapyItem
 
 class SpiderSpider(scrapy.Spider):
     name = "spider"
-    allowed_domains = ["www.leroymerlin.it"]
+    allowed_domains = ["leroymerlin.it"]
 
     def start_requests(self):
-        # keywords = keywords = ['Dewalt', 'Stanley', 'Black+Decker', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Facom', 'MAC Tools', 'Vidmar', 'Lista', 'Irwin Tools', 'Lenox', 'Proto', 'CribMaster', 'Powers Fasteners', 'cub-cadet', 'hustler', 'troy-bilt', 'rover', 'BigDog Mower', 'MTD']
-        exist_keywords = ['dewalt', 'stanley', 'black-decker', 'craftsman', 'porter-cable', 'bostitch', 'irwin', 'lenox', 'cub-cadet', 'hustler',]
+        # keywords = ['dewalt', 'Stanley', 'Black+Decker', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Facom', 'Proto', 'MAC Tools', 'Vidmar', 'Lista', 'Irwin', 'Lenox', 'CribMaster', 'Powers Fasteners', 'cub-cadet', 'hustler', 'troy-bilt', 'BigDog Mower',]
+        exist_keywords = ['dewalt', 'stanley', 'black-decker', 'stanley-fatmax']
+        now_keyword = ['black-decker']
         # company = 'Stanley Black and Decker'
 
         # from search words to generate product_urls
-        for keyword in exist_keywords:
+        for keyword in now_keyword:
             push_key = {'keyword': keyword}
 
-            search_url = f'https://www.leroymerlin.it/marchi/{keyword}/?src=brd&query={keyword}'
+            start_urls = f'https://www.leroymerlin.it/marchi/{keyword}/?src=brd&query={keyword}'
 
             yield Request(
-                url=search_url,
+                url=start_urls,
                 callback=self.parse,
                 cb_kwargs={**push_key},
             )
 
     def parse(self, response, **kwargs):
-
         # Extract the pages of product_urls
         page = response.xpath(
             '//*[@id="component-productfamilypage"]//div[@class="mc-pagination__field"]/select/option[1]/text()')[
@@ -41,15 +41,11 @@ class SpiderSpider(scrapy.Spider):
 
         # Based on pages to build product_urls
         keyword = kwargs['keyword']
-        # product_urls = [f'https://www.leroymerlin.it/marchi/{keyword}/?p={page}' for page
-        #                 in range(1, pages+1)]
-
-        # test page = 1
         product_urls = [f'https://www.leroymerlin.it/marchi/{keyword}/?p={page}' for page
-                        in range(1, 2)]
+                        in range(1, pages+1)]
 
         for product_url in product_urls:
-            yield Request(url=product_url, callback=self.product_parse)
+            yield Request(url=product_url, callback=self.product_parse,)
 
     def product_parse(self, response: Request, **kwargs):
 
@@ -59,7 +55,7 @@ class SpiderSpider(scrapy.Spider):
             product_href = product.xpath('.//article/div[2]//a/@href')[0].extract()
             product_detailed_url = f'https://www.leroymerlin.it{product_href}'
 
-            yield Request(url=product_detailed_url, callback=self.product_detailed_parse, )
+            yield Request(url=product_detailed_url, callback=self.product_detailed_parse)
 
     def product_detailed_parse(self, response, **kwargs):
 
