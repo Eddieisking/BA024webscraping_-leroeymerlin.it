@@ -15,13 +15,12 @@ class SpiderSpider(scrapy.Spider):
     allowed_domains = ["www.leroymerlin.it"]
 
     def start_requests(self):
-        # keywords = ['DeWalt', 'Black+and+Decker', 'Stanley', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Irwin+Tools',
-        #             'Lenox']
-        keywords = ['dewalt']
+        # keywords = keywords = ['Dewalt', 'Stanley', 'Black+Decker', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Facom', 'MAC Tools', 'Vidmar', 'Lista', 'Irwin Tools', 'Lenox', 'Proto', 'CribMaster', 'Powers Fasteners', 'cub-cadet', 'hustler', 'troy-bilt', 'rover', 'BigDog Mower', 'MTD']
+        exist_keywords = ['dewalt', 'stanley', 'black-decker', 'craftsman', 'porter-cable', 'bostitch', 'irwin', 'lenox', 'cub-cadet', 'hustler',]
         # company = 'Stanley Black and Decker'
 
         # from search words to generate product_urls
-        for keyword in keywords:
+        for keyword in exist_keywords:
             push_key = {'keyword': keyword}
 
             search_url = f'https://www.leroymerlin.it/marchi/{keyword}/?src=brd&query={keyword}'

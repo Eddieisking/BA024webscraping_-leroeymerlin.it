@@ -115,12 +115,12 @@ class DatabasePipeline:
 
         # Remove unloaded chars and cut
         customer_review_original = item.get('customer_review', '')
-        customer_review = remove_unappealing_characters(' '.join(customer_review_original))
+        customer_review = remove_unappealing_characters(''.join(customer_review_original))[0:1999]
         customer_support = item.get('customer_support', '')
         customer_disagree = item.get('customer_disagree', '')
 
         product_name_en = translator(item.get('product_name', ''), src='it')
-        customer_review_en = translator(item.get('customer_review', ''), src='it')
+        customer_review_en = translator(customer_review, src='it')
 
         self.data.append((review_id, product_name, customer_name, customer_rating, customer_date, customer_review, customer_support, customer_disagree, product_name_en, customer_review_en))
 
