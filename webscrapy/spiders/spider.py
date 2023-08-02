@@ -40,7 +40,7 @@ class SpiderSpider(scrapy.Spider):
         # Based on pages to build product_urls
         keyword = kwargs['keyword']
         product_urls = [f'https://www.leroymerlin.it/marchi/{keyword}/?p={page}' for page
-                        in range(1, pages+1)]
+                        in range(1, pages + 1)]
 
         for product_url in product_urls:
             yield Request(url=product_url, callback=self.product_parse, meta={'product_brand': keyword})
@@ -52,23 +52,39 @@ class SpiderSpider(scrapy.Spider):
         for product in product_list:
             product_href = product.xpath('.//article/div[2]//a/@href')[0].extract()
             product_detailed_url = f'https://www.leroymerlin.it{product_href}'
-
             yield Request(url=product_detailed_url, callback=self.product_detailed_parse, meta={'product_brand': product_brand})
 
     def product_detailed_parse(self, response, **kwargs):
         product_brand = response.meta['product_brand']
+        product_detail = response.xpath('//tbody//tr')
+        product_model = 'N/A'
+        product_type = 'N/A'
+
+        for product in product_detail:
+            attr = product.xpath('./th/text()')[0].extract()
+            value = product.xpath('./td/text()')[0].extract()
+
+            if attr == "Marca del prodotto":
+                product_brand = value if value else 'N/A'
+            elif attr == 'Modello di prodotto':
+                product_model = value if value else 'N/A'
+            elif attr == 'Tipo di prodotto':
+                product_type = value if value else 'N/A'
+
         review_href = response.xpath('//*[@id="component-displaycomp"]//section[@class="col-container"]/div['
                                      '@class="col-12 m-review__link-dedicated-page"]/a/@href').extract()
 
         if review_href:
             review_url = f'https://www.leroymerlin.it{review_href[0]}'
-            yield Request(url=review_url, callback=self.review_multiple_parse, meta={'product_brand': product_brand})
+            yield Request(url=review_url, callback=self.review_multiple_parse, meta={'product_brand': product_brand, 'product_model':product_model, 'product_type':product_type})
 
         else:
-            yield Request(url=response.url, callback=self.review_single_parse, meta={'product_brand': product_brand}, dont_filter=True)
+            yield Request(url=response.url, callback=self.review_single_parse, meta={'product_brand': product_brand, 'product_model':product_model, 'product_type':product_type}, dont_filter=True)
 
     def review_multiple_parse(self, response, **kwargs):
         product_brand = response.meta['product_brand']
+        product_model = response.meta['product_model']
+        product_type = response.meta['product_type']
 
         page_str = response.xpath('//*[@id="component-reviewdisplay"]//section[@class="col-container"]//div['
                                   '@class="mc-pagination__field"]/select/option[@value="1"]/text()')[0].extract()
@@ -82,11 +98,12 @@ class SpiderSpider(scrapy.Spider):
         for i in range(1, page_number + 1):
             review_single_detailed_url = re.sub(r'\?p=(\d+)', f'&page={i}#component-reviewdisplay', review_single_url)
 
-            yield Request(url=review_single_detailed_url, callback=self.review_single_parse, meta={'product_brand': product_brand})
+            yield Request(url=review_single_detailed_url, callback=self.review_single_parse, meta={'product_brand': product_brand, 'product_model':product_model, 'product_type':product_type})
 
     def review_single_parse(self, response: Request, **kwargs):
         product_brand = response.meta['product_brand']
-
+        product_model = response.meta['product_model']
+        product_type = response.meta['product_type']
         review_list = response.xpath('//section[@class="col-container"]/div[@class="review-data kl-hidden"]')
 
         for review in review_list:
@@ -98,9 +115,9 @@ class SpiderSpider(scrapy.Spider):
                                                   '@class="m-review-resume__designation-title"]/text()').extract_first() \
                                    or response.xpath('//*[@id="product-name"]/text()').extract_first()
             item['product_website'] = 'leroeymerlin_it'
-            item['product_type'] = 'N/A'
+            item['product_type'] = product_type
             item['product_brand'] = product_brand
-            item['product_model'] = 'N/A'
+            item['product_model'] = product_model
             item['review_id'] = review.xpath('./@data-review-id')[0].extract() or 'N/A'
             item['customer_rating'] = review.xpath('./div[@class="data-review-rating"]/text()')[0].extract() or 'N/A'
             item['customer_date'] = review.xpath('./div[@class="data-review-date"]/text()')[0].extract() or 'N/A'
