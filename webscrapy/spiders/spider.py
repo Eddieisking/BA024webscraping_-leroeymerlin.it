@@ -16,7 +16,7 @@ class SpiderSpider(scrapy.Spider):
 
     def start_requests(self):
         # keywords = ['dewalt', 'Stanley', 'Black+Decker', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Facom', 'Proto', 'MAC Tools', 'Vidmar', 'Lista', 'Irwin', 'Lenox', 'CribMaster', 'Powers Fasteners', 'cub-cadet', 'hustler', 'troy-bilt', 'BigDog Mower',]
-        exist_keywords = ['dewalt', 'stanley', 'black-decker']
+        exist_keywords = ['stanley', 'dewalt', 'black-decker']  # **************************************
         # company = 'Stanley Black and Decker'
 
         # from search words to generate product_urls
