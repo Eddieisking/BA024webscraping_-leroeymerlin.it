@@ -16,9 +16,9 @@ class SpiderSpider(scrapy.Spider):
 
     def start_requests(self):
         # keywords = ['dewalt', 'Stanley', 'Black+Decker', 'Craftsman', 'Porter-Cable', 'Bostitch', 'Facom', 'Proto', 'MAC Tools', 'Vidmar', 'Lista', 'Irwin', 'Lenox', 'CribMaster', 'Powers Fasteners', 'cub-cadet', 'hustler', 'troy-bilt', 'BigDog Mower',]
-        exist_keywords = ['stanley', 'dewalt', 'black-decker']  # **************************************
+        exist_keywords = ['stanley', 'dewalt', 'black-decker']
+        
         # company = 'Stanley Black and Decker'
-
         # from search words to generate product_urls
         for keyword in exist_keywords:
             push_key = {'keyword': keyword}
@@ -49,9 +49,11 @@ class SpiderSpider(scrapy.Spider):
         product_brand = response.meta['product_brand']
         product_list = response.xpath('//*[@id="component-productfamilypage"]//ul[@class="l-resultsList '
                                       'col-container-inner js-list-products"]/li')
+        
         for product in product_list:
             product_href = product.xpath('.//article/div[2]//a/@href')[0].extract()
             product_detailed_url = f'https://www.leroymerlin.it{product_href}'
+            
             yield Request(url=product_detailed_url, callback=self.product_detailed_parse, meta={'product_brand': product_brand})
 
     def product_detailed_parse(self, response, **kwargs):
@@ -63,21 +65,18 @@ class SpiderSpider(scrapy.Spider):
         for product in product_detail:
             attr = product.xpath('./th/text()')[0].extract()
             value = product.xpath('./td/text()')[0].extract()
-
             if attr == "Marca del prodotto":
                 product_brand = value if value else 'N/A'
             elif attr == 'Modello di prodotto':
                 product_model = value if value else 'N/A'
             elif attr == 'Tipo di prodotto':
                 product_type = value if value else 'N/A'
-
         review_href = response.xpath('//*[@id="component-displaycomp"]//section[@class="col-container"]/div['
                                      '@class="col-12 m-review__link-dedicated-page"]/a/@href').extract()
 
         if review_href:
             review_url = f'https://www.leroymerlin.it{review_href[0]}'
             yield Request(url=review_url, callback=self.review_multiple_parse, meta={'product_brand': product_brand, 'product_model':product_model, 'product_type':product_type})
-
         else:
             yield Request(url=response.url, callback=self.review_single_parse, meta={'product_brand': product_brand, 'product_model':product_model, 'product_type':product_type}, dont_filter=True)
 
@@ -85,11 +84,9 @@ class SpiderSpider(scrapy.Spider):
         product_brand = response.meta['product_brand']
         product_model = response.meta['product_model']
         product_type = response.meta['product_type']
-
         page_str = response.xpath('//*[@id="component-reviewdisplay"]//section[@class="col-container"]//div['
                                   '@class="mc-pagination__field"]/select/option[@value="1"]/text()')[0].extract()
         page_number = [int(num) for num in page_str.split() if num.isdigit()][-1]
-
         review_single_href = response.xpath('//*[@id="component-reviewdisplay"]//section['
                                             '@class="col-container"]/div/nav/a[@title="Pagina '
                                             'successiva"]/@href').extract()
